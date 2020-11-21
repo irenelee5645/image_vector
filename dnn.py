@@ -5,8 +5,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
-class NN(nn.Module):
-    def __init__(self, im_size, n_classes, hidden_dim):
+class dnn(nn.Module):
+    def __init__(self, im_size, n_classes,depth=1, act="sig"):
         '''
         Create components of a softmax classifier and initialize their weights.
 
@@ -14,11 +14,22 @@ class NN(nn.Module):
             im_size (tuple): A tuple of ints with (channels, height, width)
             n_classes (int): Number of classes to score
         '''
-        super(NN, self).__init__()
+        super(dnn, self).__init__()
         
         channels, height, width = im_size
-        self.l1 = nn.Linear(channels * height *width, hidden_dim)
-        self.l2 = nn.Linear(hidden_dim, n_classes)
+        self.l1 = nn.Linear(channels * height *width, n_classes)
+        self.l2 = nn.Linear(n_classes, n_classes)
+        self.fnn = []
+        for i in range(depth):
+            layer = nn.Linear(n_classes,n_classes)
+            self.fnn.append(layer)
+        if act == "sig":
+            self.act = nn.Sigmoid()
+        else:
+            self.act = nn.LeakyReLU()
+
+        
+
         
 
     def forward(self, images):
@@ -41,7 +52,11 @@ class NN(nn.Module):
         images = images.permute(0,2,3,1)
         x = torch.flatten(images, start_dim = 1)
         x = self.l1(x)
-        x = self.l2(x)
+        x = self.act(x)
+        x = self.fnn[0](x)
+        # for layer in self.fnn:
+        #     x = self.act(x)
+        #     x = layer(x)
         scores = F.softmax(x,1)
         return scores
 

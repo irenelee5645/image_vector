@@ -10,7 +10,10 @@ import torch.optim as optim
 from torchvision import transforms
 from torch.autograd import Variable
 from torchvision.datasets import CIFAR100
+from torch.optim.lr_scheduler import MultiStepLR
 import NN
+import dnn
+
 # You should implement these (softmax.py, twolayernn.py)
 
 # Training settings
@@ -43,8 +46,15 @@ parser.add_argument('--cifar100-dir', default='data',
                     help='directory that contains cifar-100-batches-py/ '
                          '(downloaded automatically if necessary)')
                          
-parser.add_argument("--hidden-dim",type=int,default = 50, help="the hidden featured images")
+# parser.add_argument("--hidden-dim",type=int,default = 50, help="the hidden featured images")
 parser.add_argument("--output",default = "out", help="output pt name")
+parser.add_argument("--input",default = "out", help="input pt name")
+parser.add_argument("--model",default = "NN", help="traiing model name")
+parser.add_argument('--depth', type=int, metavar='D',help='the depth of the layer')
+parser.add_argument('--act', default="sig", help="the activation function type")
+
+
+
 parser.add_argument('--resume', action='store_true', default=False,
                     help='resume from previous')
 
@@ -96,13 +106,15 @@ test_loader = torch.utils.data.DataLoader(test_dataset,
 # Load the model
 if args.resume:
     print("resuming from previous trianing")
-    model = torch.load(args.output + '.pt')
+    model = torch.load(args.input + '.pt')
+elif args.model == "NN":
+    model = NN.NN(im_size,n_classes)
 else:
-    model = NN.NN(im_size,n_classes,args.hidden_dim)
+    model = dnn.dnn(im_size,n_classes,depth = args.depth, act = args.act)
 
 
 criterion = F.cross_entropy 
-if args.cuda:
+if args.cuda and torch.cuda.is_available():
     model.cuda()
 
 optimizer = optim.SGD(model.parameters(),lr=args.lr, momentum=args.momentum, weight_decay=args.weight_decay)
@@ -173,9 +185,12 @@ def evaluate(split, verbose=False, n_batches=None):
 
 
 # train the model one epoch at a time
+scheduler = MultiStepLR(optimizer, milestones=[100, 200], gamma=0.1)
+
 for epoch in range(1, args.epochs + 1):
     train(epoch)
-evaluate('test', verbose=True)
+    evaluate('test', verbose=True)
+    scheduler.step()
 
 # Save the model (architecture and weights)
 torch.save(model, args.output + '.pt')
