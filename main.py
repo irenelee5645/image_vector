@@ -13,6 +13,7 @@ from torchvision.datasets import CIFAR100
 from torch.optim.lr_scheduler import MultiStepLR
 import NN
 import dnn
+from utils import *
 
 # You should implement these (softmax.py, twolayernn.py)
 
@@ -52,7 +53,7 @@ parser.add_argument("--input",default = "out", help="input pt name")
 parser.add_argument("--model",default = "NN", help="traiing model name")
 parser.add_argument('--depth', type=int, metavar='D',help='the depth of the layer')
 parser.add_argument('--act', default="sig", help="the activation function type")
-
+parser.add_argument('--classes', nargs='+', default=['bear','lion','tiger'])
 
 
 parser.add_argument('--resume', action='store_true', default=False,
@@ -70,6 +71,21 @@ kwargs = {'num_workers': args.num_workers, 'pin_memory': True} if args.cuda else
 # CIFAR100 meta data
 n_classes = 100
 im_size = (3, 32, 32)
+interest_class =[]
+interest_size = len(args.classes)
+class_list = unpickle("data/cifar-100-python/meta")['fine_label_names']
+mask_array = np.zeros([100,])
+for ctype in args.classes:
+    try:
+        cindx = class_list.index(ctype)
+        interest_class.append(cindx)
+        mask_array[cindx] = 1
+    except ValueError:
+        print("the class {} is not in the data".format(ctype))
+        exit()
+print("the classes passed in : {}\n the indeces: {}".format(args.classes, interest_class))
+
+
 
 
 # Subtract the mean color and divide by standard deviation. The mean image
@@ -133,6 +149,19 @@ def train(epoch):
     for batch_idx, batch in enumerate(train_loader):
         # prepare data
         images, targets = Variable(batch[0]), Variable(batch[1])
+        refined_images = []
+        refined_targets = []
+        for idx, target in enumerate(targets):
+            if idx in interest_class:
+                refined_images.append(images[idx])
+                refined_targets.append(targets[idx])
+        if len(refined_images) == 0:
+            print("no match")
+            continue
+        refined_images = torch.stack(refined_images, dim=0)
+        images = Variable(torch.Tensor(refined_images))
+        targets = Variable(torch.LongTensor(refined_targets))
+
         if args.cuda:
             images, targets = images.cuda(), targets.cuda()
         optimizer.zero_grad()
@@ -164,6 +193,20 @@ def evaluate(split, verbose=False, n_batches=None):
         loader = test_loader
     for batch_i, batch in enumerate(loader):
         data, target = batch
+
+        refined_images = []
+        refined_targets = []
+        for idx, t in enumerate(target):
+            if idx in interest_class:
+                refined_images.append(data[idx])
+                refined_targets.append(target[idx])
+        if len(refined_images) == 0:
+            print("no match")
+            continue
+        refined_images = torch.stack(refined_images, dim=0)
+        data = Variable(torch.Tensor(refined_images))
+        target = Variable(torch.LongTensor(refined_targets))
+
         if args.cuda:
             data, target = data.cuda(), target.cuda()
         data, target = Variable(data, volatile=True), Variable(target)

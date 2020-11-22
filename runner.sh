@@ -22,10 +22,13 @@ python -u main.py \
     --depth 2 \
     --act sig \
     --lr 0.01 | tee depth2_sig.log
+
  python -u main.py \
     --epochs 300 \
     --weight-decay 0.01 \
     --momentum 0.2 \
     --batch-size 128 \
     --num-workers 8 \
-    --lr 0.01 | tee logging2.log
+    --classes lion tiger wolf \
+    --out three_select/lion_tiger_wolf \
+    --lr 0.01 | tee three_select/ltw.log
