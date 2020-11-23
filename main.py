@@ -121,7 +121,7 @@ test_loader = torch.utils.data.DataLoader(test_dataset,
 
 # Load the model
 if args.resume:
-    print("resuming from previous trianing")
+    print("resuming from previous trianing : {}".format(args.input))
     model = torch.load(args.input + '.pt')
 elif args.model == "NN":
     model = NN.NN(im_size,n_classes)
@@ -135,7 +135,7 @@ if args.cuda and torch.cuda.is_available():
 
 optimizer = optim.SGD(model.parameters(),lr=args.lr, momentum=args.momentum, weight_decay=args.weight_decay)
 
-
+max_accuracy = 0
 
 def train(epoch):
     '''
@@ -206,7 +206,7 @@ def evaluate(split, verbose=False, n_batches=None):
         refined_images = torch.stack(refined_images, dim=0)
         data = Variable(torch.Tensor(refined_images))
         target = Variable(torch.LongTensor(refined_targets))
-
+        # print(len(refined_targets))
         if args.cuda:
             data, target = data.cuda(), target.cuda()
         data, target = Variable(data, volatile=True), Variable(target)
@@ -215,7 +215,8 @@ def evaluate(split, verbose=False, n_batches=None):
         # predict the argmax of the log-probabilities
         pred = output.data.max(1, keepdim=True)[1]
         correct += pred.eq(target.data.view_as(pred)).cpu().sum()
-        n_examples += pred.size(0)
+        # n_examples += pred.size(0)
+        n_examples += len(target)
         if n_batches and (batch_i >= n_batches):
             break
 
@@ -224,6 +225,11 @@ def evaluate(split, verbose=False, n_batches=None):
     if verbose:
         print('\n{} set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
             split, loss, correct, n_examples, acc))
+    global max_accuracy
+    if split == "test" and acc > max_accuracy:
+        torch.save(model, args.output + '.pt')
+        max_accuracy = acc
+        print("updated the model")
     return loss, acc
 
 
@@ -236,7 +242,8 @@ for epoch in range(1, args.epochs + 1):
     scheduler.step()
 
 # Save the model (architecture and weights)
-torch.save(model, args.output + '.pt')
+# torch.save(model, args.output + '.pt')
+
 # Later you can call torch.load(file) to re-load the trained model into python
 # See http://pytorch.org/docs/master/notes/serialization.html for more details
 
