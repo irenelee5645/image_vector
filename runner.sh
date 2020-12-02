@@ -79,3 +79,11 @@ python -u main.py \
     --classes camel cattle chimpanzee elephant kangaroo \
     --out three_select/largeob \
     --lr 0.01 | tee three_select/largeob.log
+
+ python -u cifar10_main.py \
+    --epochs 500 \
+    --weight-decay 0.01 \
+    --momentum 0.2 \
+    --batch-size 512 \
+    --out cifar10/cifar10 \
+    --lr 0.01 | tee cifar10/cifar10.log
