@@ -16,7 +16,6 @@ from utils import *
 from torch.optim.lr_scheduler import MultiStepLR
 
 
-# You should implement these (softmax.py, twolayernn.py)
 
 
 # Training settings
@@ -104,7 +103,7 @@ elif args.model == "NN":
 else:
     exit()
 # cross-entropy loss function
-criterion = F.cross_entropy ##TODO: add regularization.
+criterion = F.cross_entropy #
 if args.cuda:
     model.cuda()
 optimizer = optim.SGD(model.parameters(),lr=args.lr, momentum=args.momentum, weight_decay=args.weight_decay)
@@ -124,18 +123,12 @@ def train(epoch):
         images, targets = Variable(batch[0]), Variable(batch[1])
         if args.cuda:
             images, targets = images.cuda(), targets.cuda()
-        #############################################################################
-        # TODO: Update the parameters in model using the optimizer from above.
-        # This only requires a couple lines of code.
-        #############################################################################
         optimizer.zero_grad()
         output = model(images)
         loss = criterion(output, targets)
         loss.backward()
         optimizer.step()
-        #############################################################################
-        #                             END OF YOUR CODE                              #
-        #############################################################################
+
         if batch_idx % args.log_interval == 0:
             val_loss, val_acc = evaluate('val', n_batches=4)
             train_loss = loss.data

@@ -21,7 +21,7 @@
     --classes tulip rose sunflower \
     --resume \
     --input three_select/tulip_rose_sunflower \
-    --out three_select/tulip_rose_sunflower2 \
+    --output three_select/tulip_rose_sunflower2 \
     --lr 0.01 | tee three_select/trs2.log
 
 
