@@ -12,7 +12,6 @@ from torch.autograd import Variable
 from torchvision.datasets import CIFAR100
 from torch.optim.lr_scheduler import MultiStepLR
 import NN
-import dnn
 from utils import *
 
 # You should implement these (softmax.py, twolayernn.py)
@@ -30,8 +29,7 @@ parser.add_argument('--batch-size', type=int, metavar='N',
                     help='input batch size for training')
 parser.add_argument('--epochs', type=int, metavar='N',
                     help='number of epochs to train')
-# parser.add_argument('--hidden-dim', type=int,
-#                     help='number of hidden features/activations')
+
 parser.add_argument('--kernel-size', type=int,
                     help='size of convolution kernels/filters')
 # Other configuration
@@ -51,8 +49,6 @@ parser.add_argument('--cifar100-dir', default='data',
 parser.add_argument("--output",default = "out", help="output pt name")
 parser.add_argument("--input",default = "out", help="input pt name")
 parser.add_argument("--model",default = "NN", help="traiing model name")
-parser.add_argument('--depth', type=int, metavar='D',help='the depth of the layer')
-parser.add_argument('--act', default="sig", help="the activation function type")
 parser.add_argument('--classes', nargs='+', default=['bear','lion','tiger'])
 
 
@@ -125,8 +121,7 @@ if args.resume:
     model = torch.load(args.input + '.pt')
 elif args.model == "NN":
     model = NN.NN(im_size,n_classes)
-else:
-    model = dnn.dnn(im_size,n_classes,depth = args.depth, act = args.act)
+
 
 
 criterion = F.cross_entropy 
