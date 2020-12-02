@@ -40,4 +40,5 @@ Run the Jupyter notebook in `threeselect/` to generate image embedding vectors f
 
 ## References
 Word2Vec : https://arxiv.org/pdf/1301.3781.pdf
+
 The code for the main script has been adapted from Georgia Tech's CS 4803 assignment.
