@@ -1,6 +1,8 @@
 # Im2Vec
 Im2Vec is a language model approach to visualizing and understanding images in image classification task. Im2Vec generates image embedding vectors for each class of image and shows relationship among images of different classes. 
 
+The paper can be viewed here: [Im2Vec Paper](https://github.com/irenelee5645/image_vector/blob/main/Im2Vec.pdf)
+
 ## Setup
 Please have Pytorch installed to reproduce our results.
 Other libraries required include `numpy` and `pickle` .
